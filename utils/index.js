@@ -1,19 +1,6 @@
-exports.getBreastCancerAssessmentResult = (questionnaire) => {
+exports.riskAssessmentResultAlgorithsm = (questionnaire, questionRiskMapping) => {
   const highRisk = [];
   const lowRisk = [];
-
-  const questionRiskMapping = {
-    age: 'high',
-    have_relative: 'high',
-    unusual_change: 'high',
-    undergone_test: 'low',
-    have_lump: 'high',
-    early_mens: 'low',
-    used_HRT: 'high',
-    nipples_discharge: 'high',
-    overweight: 'low',
-    freq_excercise: 'low',
-  };
 
   const questionsData = Object.entries(questionnaire);
 
@@ -41,6 +28,6 @@ exports.getBreastCancerAssessmentResult = (questionnaire) => {
   } else if (lowRisk.length >= highRiskThreshold) {
     assessmentResult = 'LOW';
   }
-
+  // console.log(assessmentResult);
   return assessmentResult;
 };
