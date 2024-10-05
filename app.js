@@ -3,7 +3,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 
 const corsOptions = {
-  origin: ['http://localhost:3000'],
+  origin: ['http://localhost:3000', 'https://medical-link.netlify.app/'],
   credentials: true,
 };
 
