@@ -1,37 +1,69 @@
 const mongoose = require('mongoose');
 const bycrpt = require('bcryptjs');
 
-const userSchema = new mongoose.Schema({
-  firstName: {
-    type: String,
-    required: [true, 'A User must have a firstname '],
-  },
-  lastName: {
-    type: String,
-    required: [true, 'A User must have a lastname'],
-  },
-  email: {
-    type: String,
-    required: [true, 'A User must have an email'],
-    unique: true,
-  },
-  password: {
-    type: String,
-    select: false, // hidde in rest response
-    required: [true, 'A User must have a Password'],
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now(),
-  },
+const userSchema = new mongoose.Schema(
+  {
+    firstName: {
+      type: String,
+      required: [true, 'A User must have a firstname '],
+    },
+    lastName: {
+      type: String,
+      required: [true, 'A User must have a lastname'],
+    },
+    email: {
+      type: String,
+      required: [true, 'A User must have an email'],
+      unique: true,
+    },
+    password: {
+      type: String,
+      select: false, // hidde in rest response
+      required: [true, 'A User must have a Password'],
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now(),
+    },
 
-  role: {
-    type: String,
-    default: 'user',
-    required: [true, 'A User role must be specified'],
+    role: {
+      type: String,
+      default: 'user',
+      required: [true, 'A User role must be specified'],
+    },
   },
+  //import to include for virtual fields to works
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
+);
+
+userSchema.virtual('breastCancerResult', {
+  ref: 'BreastCancer',
+  localField: '_id',
+  foreignField: 'user',
 });
 
+userSchema.virtual('cardiovascularResult', {
+  ref: 'Cardiovascular',
+  localField: '_id',
+  foreignField: 'user',
+});
+userSchema.virtual('diabetesResult', {
+  ref: 'Diabetes',
+  localField: '_id',
+  foreignField: 'user',
+});
+userSchema.virtual('pregnancyResult', {
+  ref: 'Pregnancy',
+  localField: '_id',
+  foreignField: 'user',
+});
+
+//
+//
+//
 // THis middleware only work on save and create method
 userSchema.pre('save', async function (next) {
   // we only wanna encrpty once, if the field is updated or new created

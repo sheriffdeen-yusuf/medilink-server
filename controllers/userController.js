@@ -1,5 +1,17 @@
 const User = require('../models/userModel');
 
+const Pregnancy = require('./../models/pregnancyModel');
+const Diabetes = require('./../models/diabetesModel');
+const Cardiovascular = require('./../models/cardiovascularModel');
+const BreastCancer = require('./../models/breastCancerModel');
+
+const assessment = {
+  pregnancy: Pregnancy,
+  diabetes: Diabetes,
+  cardiovascular: Cardiovascular,
+  breastCancer: BreastCancer,
+};
+
 exports.getUsers = async (req, res) => {
   const users = await User.find();
 
@@ -20,7 +32,23 @@ exports.getMe = (req, res, next) => {
 
 exports.getUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id)
+      .populate({
+        path: 'breastCancerResult',
+        select: 'assesment_type createdAt result',
+      })
+      .populate({
+        path: 'cardiovascularResult',
+        select: 'assesment_type createdAt result',
+      })
+      .populate({
+        path: 'diabetesResult',
+        select: 'assesment_type createdAt result',
+      })
+      .populate({
+        path: 'pregnancyResult',
+        select: 'assesment_type createdAt result',
+      });
 
     res.status(200).json({
       status: 'success',
@@ -75,6 +103,41 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
+exports.deleteTakenAssessment = async (req, res) => {
+  try {
+    const { assessmentType, id } = req.params;
+
+    const AssessmentModel = assessment[assessmentType];
+
+    if (!AssessmentModel) {
+      return res.status(400).json({
+        status: 'fail',
+        message: 'Invalid assessment type',
+      });
+    }
+
+    const deletedAssessment = await AssessmentModel.findByIdAndDelete(id);
+
+    if (!deletedAssessment) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'No assessment found with that ID',
+      });
+    }
+
+    return res.status(204).json({
+      status: 'success',
+      data: null,
+      message: `uccessfully deleted`,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 'error',
+      message: error.message || 'Server error',
+    });
+  }
+};
+
 exports.createUser = async (req, res) => {
   try {
     const user = await User.create(req.body);
@@ -90,46 +153,6 @@ exports.createUser = async (req, res) => {
     res.status(400).json({
       status: 'failed',
       message: 'Failed to create user',
-    });
-  }
-};
-
-exports.createBooking = async (req, res) => {
-  try {
-    const { propertyId } = req.body;
-    const userId = req.user._id;
-
-    const existingBooking = await Booking.findOne({ propertyId, userId });
-    const property = await Property.findById(propertyId);
-
-    if (existingBooking) {
-      return res.status(400).json({
-        status: 'failed',
-        message: 'You have already booked this property.',
-      });
-    }
-
-    const booking = await Booking.create({
-      property: propertyId,
-      user: userId,
-    });
-
-    property.bookings.push(booking._id);
-    await property.save();
-
-    res.status(201).json({
-      status: 'success',
-      message: 'Booking created successfully',
-      payload: {
-        booking,
-      },
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(400).json({
-      status: 'failed',
-      message: 'Failed to create booking',
-      errors: err?.errors,
     });
   }
 };

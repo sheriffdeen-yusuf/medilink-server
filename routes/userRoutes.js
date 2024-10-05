@@ -12,6 +12,10 @@ router
 router.route('/').get(userControllers.getUsers);
 
 router
+  .route('/:assessmentType/:id')
+  .delete(authControllers.protect, userControllers.deleteTakenAssessment);
+
+router
   .route('/:id')
   .patch(authControllers.protect, userControllers.updateUser)
   .delete(userControllers.deleteUser)
